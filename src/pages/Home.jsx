@@ -93,10 +93,15 @@ export default function Home() {
     if (!nameInput.trim()) return;
     setSavingName(true);
     try {
-      const { error } = await supabase.from("profiles").upsert({ id: myId, email: user.email, full_name: nameInput.trim(), role: roleInput });
+      console.log("Saving profile for:", myId, user.email);
+      const { data, error } = await supabase.from("profiles").upsert({ id: myId, email: user.email, full_name: nameInput.trim(), role: roleInput });
+      console.log("Upsert result:", data, error);
       if (error) { console.error("Profile save error:", error); setSavingName(false); return; }
+      console.log("Calling refreshUser...");
       await refreshUser();
+      console.log("User refreshed, loading data...");
       await loadAllData();
+      console.log("Done loading data");
     } catch(e) {
       console.error("Save error:", e);
     }
