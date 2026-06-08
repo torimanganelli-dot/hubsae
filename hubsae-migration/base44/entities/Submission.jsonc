@@ -1,0 +1,60 @@
+{
+  "name": "Submission",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "activity_id": {
+      "type": "string"
+    },
+    "module_id": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "score": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "adequate",
+        "needs_work"
+      ],
+      "default": "pending"
+    },
+    "feedback": {
+      "type": "object",
+      "properties": {
+        "verdict": {
+          "type": "string"
+        },
+        "strengths": {
+          "type": "string"
+        },
+        "gaps": {
+          "type": "string"
+        },
+        "coaching": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "user_id",
+    "activity_id",
+    "module_id"
+  ]
+}

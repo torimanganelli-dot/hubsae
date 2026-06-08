@@ -1,0 +1,19 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "cohort_id": {
+      "type": "string",
+      "description": "ID of the cohort this user belongs to"
+    }
+  },
+  "required": []
+}

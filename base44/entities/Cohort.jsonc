@@ -1,0 +1,17 @@
+{
+  "name": "Cohort",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Cohort name (e.g. Spring 2025, Cohort A)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "name": "PostCapstoneEntry",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "month": {
+      "type": "number",
+      "description": "1, 2, or 3"
+    },
+    "competency": {
+      "type": "string"
+    },
+    "response": {
+      "type": "string"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "reflection_q1": {
+      "type": "string"
+    },
+    "reflection_q2": {
+      "type": "string"
+    },
+    "revenue_influenced": {
+      "type": "number",
+      "default": 0
+    },
+    "metric2": {
+      "type": "number",
+      "default": 0
+    },
+    "metric3": {
+      "type": "number",
+      "default": 0
+    },
+    "metric4": {
+      "type": "number",
+      "default": 0
+    },
+    "top3": {
+      "type": "array",
+      "description": "Top 3 opportunities this month",
+      "items": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "revenue": {
+            "type": "string"
+          },
+          "signal": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "month_completed": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "month",
+    "competency"
+  ]
+}
