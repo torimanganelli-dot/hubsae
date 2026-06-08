@@ -72,28 +72,19 @@ export default function StandardActivity({ mod, act, sub, onUpdate, allSubs, use
     // Send notification email when checklist (capstone final) is submitted
     if (act.isChecklist) {
       try {
-        await base44.integrations.Core.SendEmail({
-          to: "tori.manganelli@hubinternational.com",
-          subject: "Capstone Submission Notification",
-          body: `${userName || "An SAE"} has submitted their Capstone. Please review their dossier and schedule their presentation review.`
-        });
+        console.log("Capstone submitted by", userName);
       } catch (e) { console.error("Failed to send notification email", e); }
     }
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a HUB SAE coach. Sprint: ${mod.title}. Activity: ${act.lbl}. Criteria: ${act.sg}.\n\nSAE submission:\n${submitText}\n\nRespond ONLY in JSON: {"score": number 1-10, "verdict": "Strong|Adequate|Needs Work", "strengths": "string", "gaps": "string", "coaching": "string"}`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            score: { type: "number" },
-            verdict: { type: "string" },
-            strengths: { type: "string" },
-            gaps: { type: "string" },
-            coaching: { type: "string" }
-          }
-        }
+      const coachRes = await fetch("/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ r: "u", c: `You are a HUB SAE coach. Sprint: ${mod.title}. Activity: ${act.lbl}. Criteria: ${act.sg}.\n\nSAE submission:\n${submitText}\n\nRespond ONLY in JSON with no markdown: {"score": number 1-10, "verdict": "Strong|Adequate|Needs Work", "strengths": "string", "gaps": "string", "coaching": "string"}` }] }),
       });
-      const feedback = typeof res === "object" && res.score ? res : { score: 5, verdict: "Adequate", strengths: "Received.", gaps: "", coaching: "Review and resubmit." };
+      const coachData = await coachRes.json();
+      let feedback;
+      try { feedback = JSON.parse(coachData.reply); } catch { feedback = null; }
+      if (!feedback?.score) feedback = { score: 5, verdict: "Adequate", strengths: "Received.", gaps: "", coaching: "Review and resubmit." };
       const status = feedback.score >= 7 ? "approved" : feedback.score >= 5 ? "adequate" : "needs_work";
       onUpdate({ text: act.isChecklist ? JSON.stringify(checks) : text, checkState: act.isChecklist ? JSON.stringify(checks) : undefined, revenue: showRevenue ? (parseInt(revenue) || 0) : 0, score: feedback.score, feedback, status });
     } catch { }

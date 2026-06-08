@@ -52,15 +52,15 @@ export default function ReflectionActivity({ mod, act, sub, onUpdate, userName }
     if (!combined.replace(/Q\d: /g, "").trim()) return;
     setLoading(true);
     try {
-      const feedback = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a rigorous HUB SAE coach reviewing a sprint reflection. Sprint: ${mod.title}.\n\nReflection responses:\n${combined}\n\nYour job is to give SPECIFIC, HONEST coaching — not generic praise. Read the actual answers carefully.\n\nRespond ONLY in JSON with exactly these three fields:\n{\n  "strengths": "2-3 sentences citing SPECIFIC things they wrote that show real insight or self-awareness. Quote or reference their actual words. If their answers are vague or thin, say so honestly.",\n  "growth": "2-3 sentences identifying SPECIFIC gaps in their thinking based on what they wrote. Call out where they were surface-level, avoided accountability, or missed the deeper insight. Name the exact question or moment where the gap appeared.",\n  "coaching": "1-2 sentences of a direct, challenging coaching note — something they need to hear that will actually change how they show up in the next sprint. Not a compliment. A push."\n}`,
-        response_json_schema: {
-          type: "object", properties: {
-            strengths: { type: "string" }, growth: { type: "string" }, coaching: { type: "string" }
-          }
-        }
+      const coachRes = await fetch("/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ r: "u", c: `You are a rigorous HUB SAE coach reviewing a sprint reflection. Sprint: ${mod.title}.\n\nReflection responses:\n${combined}\n\nRespond ONLY in JSON with no markdown: {"strengths": "2-3 sentences of specific strengths", "growth": "2-3 sentences of specific gaps", "coaching": "1-2 sentences of direct coaching"}` }] }),
       });
-      const f = typeof feedback === "object" && feedback.strengths ? feedback : { strengths: "Your reflection has been received.", growth: "", coaching: "Keep going — each sprint builds on the last." };
+      const coachData = await coachRes.json();
+      let f;
+      try { f = JSON.parse(coachData.reply); } catch { f = null; }
+      if (!f?.strengths) f = { strengths: "Your reflection has been received.", growth: "", coaching: "Keep going — each sprint builds on the last." };
       onUpdate({ text: JSON.stringify({ ...answers, oppCount, top3 }), revenue: parseInt(revenue) || 0, feedback: f, status: "approved" });
     } catch { }
     setLoading(false);

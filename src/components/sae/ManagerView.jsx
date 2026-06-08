@@ -23,8 +23,8 @@ export default function ManagerView({ users: initialUsers, allSubs }) {
   useEffect(() => {
     // Fetch fresh user and cohort data on mount to pick up any cohort changes
     Promise.all([
-      base44.entities.User.list(),
-      base44.entities.Cohort.list(),
+      supabase.from("profiles").select("*").order("full_name").then(({ data }) => data || []),
+      supabase.from("cohorts").select("*").order("name").then(({ data }) => data || []),
     ]).then(([freshUsers, freshCohorts]) => {
       setUsers(freshUsers);
       setCohorts(freshCohorts);
@@ -37,7 +37,7 @@ export default function ManagerView({ users: initialUsers, allSubs }) {
 
   const handleSaveEdit = async () => {
     const { userId, name, cohort_id } = editModal;
-    await base44.entities.User.update(userId, { full_name: name, cohort_id });
+    await supabase.from("profiles").update({ full_name: name, cohort_id: cohort_id || null }).eq("id", userId);
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, full_name: name, cohort_id } : u));
     setEditModal(null);
   };

@@ -127,7 +127,7 @@ export default function PostCapstone({ userId, userName }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.PostCapstoneEntry.filter({ user_id: userId }).then(data => {
+    supabase.from("post_capstone_entries").select("*").eq("user_id", userId).then(({ data }) => {
       setEntries(data);
       // Build localData map: `${month}-${competency}` -> entry
       const map = {};
@@ -166,9 +166,11 @@ export default function PostCapstone({ userId, userName }) {
     const payload = { user_id: userId, user_name: userName, month, competency, response: data.response || "", completed: true };
     let saved;
     if (existing?.id) {
-      saved = await base44.entities.PostCapstoneEntry.update(existing.id, payload);
+      const { data: updated } = await supabase.from("post_capstone_entries").update(payload).eq("id", existing.id).select().single();
+      saved = updated;
     } else {
-      saved = await base44.entities.PostCapstoneEntry.create(payload);
+      const { data: created } = await supabase.from("post_capstone_entries").insert(payload).select().single();
+      saved = created;
     }
     setEntries(prev => existing?.id ? prev.map(e => e.id === existing.id ? saved : e) : [...prev, saved]);
     setSaving(prev => ({ ...prev, [key]: false }));
@@ -257,11 +259,11 @@ export default function PostCapstone({ userId, userName }) {
     // Update all competency entries for this month with reflection + metrics, mark month_completed
     const monthEntries = entries.filter(e => e.month === month);
     const updates = monthEntries.map(e =>
-      base44.entities.PostCapstoneEntry.update(e.id, sharedPayload)
+      supabase.from("post_capstone_entries").update(sharedPayload).eq("id", e.id)
     );
     // If no competency entries yet, create a summary entry
     if (monthEntries.length === 0) {
-      await base44.entities.PostCapstoneEntry.create({
+      await supabase.from("post_capstone_entries").insert({
         user_id: userId, user_name: userName, month,
         competency: "summary",
         ...sharedPayload,
@@ -270,7 +272,7 @@ export default function PostCapstone({ userId, userName }) {
       await Promise.all(updates);
     }
     // Reload
-    const fresh = await base44.entities.PostCapstoneEntry.filter({ user_id: userId });
+    const { data: fresh } = await supabase.from("post_capstone_entries").select("*").eq("user_id", userId);
     setEntries(fresh);
     if (month < 3) setActiveMonth(month + 1);
   };

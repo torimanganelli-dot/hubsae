@@ -24,11 +24,13 @@ export default function AICoach({ mod, aiMsgs, onUpdateMsgs }) {
     setInput("");
     setLoading(true);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: newMsgs.map(m => (m.r === "u" ? "User" : "Assistant") + ": " + m.c).join("\n"),
-        add_context_from_internet: false,
+      const res = await fetch("/api/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMsgs }),
       });
-      const reply = typeof res === "string" ? res : res?.text || "I couldn't generate a response. Please try again.";
+      const data = await res.json();
+      const reply = data.reply || "I couldn't generate a response. Please try again.";
       onUpdateMsgs([...newMsgs, { r: "a", c: reply }]);
     } catch {
       onUpdateMsgs([...newMsgs, { r: "a", c: "Connection error. Please try again." }]);
