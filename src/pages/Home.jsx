@@ -92,11 +92,15 @@ export default function Home() {
   const handleSaveName = async () => {
     if (!nameInput.trim()) return;
     setSavingName(true);
-    await supabase.from("profiles").upsert({ id: myId, email: user.email, full_name: nameInput.trim(), role: roleInput });
-    await refreshUser();
+    try {
+      const { error } = await supabase.from("profiles").upsert({ id: myId, email: user.email, full_name: nameInput.trim(), role: roleInput });
+      if (error) { console.error("Profile save error:", error); setSavingName(false); return; }
+      await refreshUser();
+      await loadAllData();
+    } catch(e) {
+      console.error("Save error:", e);
+    }
     setSavingName(false);
-    if (shouldShowWelcomeVideo()) setShowWelcomeVideo(true);
-    await loadAllData();
   };
 
   const handleOpenSprint = (modId) => { setActiveMod(modId); setActiveAct(null); };
